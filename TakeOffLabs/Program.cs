@@ -2,9 +2,24 @@
 
 using TakeOffLabs;
 
+void SubTask1(List<Golfer> golfers)
+{
+    var set = new HashSet<string>(golfers.Select(s => s.ClubName).ToList());
+    foreach (var clubName in set)
+    {
+        Console.Write(clubName + ": ");
+        golfers
+            .Where(g => g.ClubName == clubName)
+            .OrderByDescending(g => g.SkillLevel)
+            .ToList()
+            .ForEach(g => Console.Write(g.Name + " "));
+        Console.Write("\n");
+    }
+}
+
 int golferCount, scoreCount;
 
-golferCount = Console.Read();
+golferCount = Int32.Parse(Console.ReadLine());
 
 var golfers = new List<Golfer>();
 
@@ -26,7 +41,7 @@ for (int i = 0; i < golferCount; ++i)
     golfers.Add(golfer);
 }
 
-scoreCount = Console.Read();
+scoreCount = Int32.Parse(Console.ReadLine());
 
 var scores = new List<Score>();
 
@@ -49,4 +64,22 @@ for (int i = 0; i < scoreCount; ++i)
     scores.Add(score);
 }
 
-//scores.GroupBy(s => s.GolferId).
+var query = scores.GroupBy(
+    s => s.GolferId,
+    s => s.Value,
+    (golferId, values) => new
+    {
+        Key = golferId,
+        Average = (double) (values.Sum() / values.Count())
+    });
+
+foreach (var group in query)
+{
+    var golfer = golfers.Find(g => g.Id == group.Key);
+    if (golfer != null)
+    {
+        golfer.SkillLevel = group.Average;
+    }
+}
+
+SubTask1(golfers);
